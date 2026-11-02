@@ -1,0 +1,7 @@
+/* Only what Tailwind can't do inline: chart + scrollbars */
+.chart{position:relative;width:100%}
+.chart svg{width:100%;height:auto;display:block;overflow:visible}
+.chart .tip{position:absolute;pointer-events:none;background:#4f46e5;color:#fff;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;transform:translate(-50%,-135%);opacity:0;transition:opacity .12s;box-shadow:0 8px 20px -6px rgba(79,70,229,.8)}
+.scrollx::-webkit-scrollbar{height:8px}.scrollx::-webkit-scrollbar-thumb{background:#334155;border-radius:8px}
+details>summary{list-style:none}details>summary::-webkit-details-marker{display:none}
+input[type=date]{color-scheme:dark}

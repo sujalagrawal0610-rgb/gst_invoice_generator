@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}{{ app_name }}{% endblock %} · {{ app_name }}</title>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/extra.css') }}">
+</head>
+<body class="bg-[#101828] min-h-screen text-slate-100">
+<div class="fixed top-4 right-4 z-50 space-y-2 w-[min(420px,calc(100vw-2rem))]" id="toasts">
+{% with msgs = get_flashed_messages(with_categories=true) %}{% for cat, m in msgs %}
+<div class="toast {{ cat }} cursor-pointer px-4 py-3 rounded-xl text-sm shadow-2xl border {{ {'success':'bg-emerald-950 border-emerald-500/40 text-emerald-200','error':'bg-rose-950 border-rose-500/40 text-rose-200','info':'bg-indigo-950 border-indigo-500/40 text-indigo-200'}.get(cat,'bg-slate-800 border-slate-600') }}">{{ m }}</div>
+{% endfor %}{% endwith %}
+</div>
+{% block body %}
+{% set nl = 'px-3 py-2 rounded-lg text-sm font-semibold transition ' %}
+{% macro link(key, href, label) -%}
+<a href="{{ href }}" class="px-3 py-2 rounded-lg text-sm font-semibold transition {{ 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' if nav==key else 'text-slate-300 hover:bg-slate-700/60' }}">{{ label }}</a>
+{%- endmacro %}
+<div class="max-w-6xl mx-auto p-4 sm:p-8">
+  <header class="{{ ui.card }} p-5 mb-8 flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <a href="{{ url_for('dashboard') }}" class="text-2xl font-bold text-white tracking-wide">InvoiceFlow <span class="text-indigo-400">SME</span></a>
+      <p class="text-xs text-slate-400 mt-1">{{ user.email }}{% if is_admin_user %} · <span class="text-emerald-400 font-semibold">Admin</span>{% endif %}</p>
+    </div>
+    <nav class="flex flex-wrap items-center gap-1">
+      {{ link('dashboard', url_for('dashboard'), 'Dashboard') }}
+      {{ link('new', url_for('invoice_new'), '+ New Invoice') }}
+      {{ link('invoices', url_for('invoices'), 'Invoices') }}
+      {% if is_admin_user %}{{ link('admin', url_for('admin_panel'), '🛡 Admin') }}{% endif %}
+      <form method="post" action="{{ url_for('logout') }}" class="ml-2">{{ csrf_input() }}
+        <button type="submit" class="bg-rose-500/10 text-rose-400 px-4 py-2 rounded-xl border border-rose-500/20 hover:bg-rose-500/20 font-semibold text-sm">🚪 Logout</button></form>
+    </nav>
+  </header>
+  <main>{% block content %}{% endblock %}</main>
+</div>
+{% endblock %}
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

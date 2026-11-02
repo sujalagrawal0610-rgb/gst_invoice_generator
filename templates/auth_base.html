@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="relative min-h-screen flex items-center justify-center p-4 sm:p-8 overflow-hidden">
+  <div class="pointer-events-none absolute -top-40 -left-40 w-[34rem] h-[34rem] rounded-full bg-indigo-600/25 blur-3xl"></div>
+  <div class="pointer-events-none absolute -bottom-48 -right-32 w-[34rem] h-[34rem] rounded-full bg-emerald-500/15 blur-3xl"></div>
+  <div class="relative w-full max-w-xl bg-[#1d2939]/95 backdrop-blur p-8 sm:p-12 rounded-3xl shadow-2xl shadow-black/50 border border-slate-600/60">
+    <div class="text-center mb-9">
+      <div class="mx-auto mb-5 w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-700 shadow-lg shadow-indigo-600/40 flex items-center justify-center">
+        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      </div>
+      <h1 class="text-4xl font-extrabold text-white tracking-tight">InvoiceFlow <span class="text-indigo-400">SME</span></h1>
+      <p class="text-sm text-slate-400 mt-2">GST Compliant Billing & Management System</p>
+    </div>
+    {% block authbox %}{% endblock %}
+  </div>
+</div>
+{% endblock %}

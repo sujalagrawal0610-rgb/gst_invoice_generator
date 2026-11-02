@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% from '_ui.html' import chart, stat %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="flex flex-wrap justify-between items-end gap-3 mb-6">
+  <div><h1 class="text-2xl font-bold text-white">Dashboard</h1>
+  <p class="text-xs text-slate-400 mt-1">Hi {{ user.email.split('@')[0] }}, here is how your billing looks.</p></div>
+  <a href="{{ url_for('invoice_new') }}" class="{{ ui.btn }}">+ Create Invoice</a>
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+  {{ stat('Total Invoiced', stats.total|inr, 'all time') }}
+  {{ stat('Invoices', stats.n, 'generated', 'text-indigo-400') }}
+  {{ stat('GST Collected', stats.gst|inr, 'all time', 'text-amber-400') }}
+</div>
+
+<div class="flex justify-between items-center mb-3"><h2 class="text-lg font-bold text-white">Recent Invoices</h2>
+<a href="{{ url_for('invoices') }}" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold">View all →</a></div>
+<div class="flex gap-4 overflow-x-auto scrollx pb-3 mb-8">
+  <a href="{{ url_for('invoice_new') }}" class="shrink-0 w-72 min-h-44 rounded-2xl bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-600/30 transition flex flex-col items-center justify-center text-white">
+    <span class="text-2xl font-semibold">+ Create invoice</span><span class="text-xs text-indigo-200 mt-1">GST auto-detected</span></a>
+  {% for i in recent %}
+  <a href="{{ url_for('invoice_view', inv_id=i.id) }}" class="shrink-0 w-72 {{ ui.card }} p-5 hover:border-indigo-500 transition">
+    <div class="flex justify-between items-center text-xs text-slate-400 pb-3 border-b border-slate-700"><span>{{ i.invoice_no }}</span><span>{{ i.created_at|dt }}</span></div>
+    <p class="text-2xl font-black text-white mt-3">{{ i.total|inr }}</p>
+    <p class="text-xs text-slate-400 truncate">{{ i.buyer_name }}</p>
+    <p class="text-xs text-slate-500 mt-3 pt-3 border-t border-slate-700 truncate">{{ i.first_item }}{% if i.item_count>1 %} +{{ i.item_count-1 }} more{% endif %}</p>
+  </a>
+  {% endfor %}
+</div>
+
+<h2 class="text-lg font-bold text-white mb-3">Total Invoiced – Last 12 Months</h2>
+<div class="{{ ui.card }} p-5 mb-8">{{ chart(series) }}</div>
+
+<div class="flex justify-between items-center mb-3"><h2 class="text-lg font-bold text-white">All Invoices</h2>
+<a href="{{ url_for('invoices') }}" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold">Search &amp; view all →</a></div>
+<div class="{{ ui.card }} overflow-x-auto">
+{% if recent %}
+<table class="w-full text-left text-sm"><thead><tr class="border-b border-slate-700">
+  <th class="{{ ui.th }}">Invoice</th><th class="{{ ui.th }}">Buyer</th><th class="{{ ui.th }}">Date</th>
+  <th class="{{ ui.th }} text-right">GST</th><th class="{{ ui.th }} text-right">Total</th><th></th></tr></thead>
+<tbody class="divide-y divide-slate-700">
+{% for i in recent %}<tr>
+  <td class="p-3"><a class="font-semibold text-indigo-400 hover:text-indigo-300" href="{{ url_for('invoice_view', inv_id=i.id) }}">{{ i.invoice_no }}</a></td>
+  <td class="p-3 font-semibold text-white">{{ i.buyer_name }}<div class="text-xs font-normal text-slate-500">{{ i.buyer_email or '' }}</div></td>
+  <td class="p-3 text-xs text-slate-400">{{ i.created_at|dt }}</td>
+  <td class="p-3 text-right text-amber-400">{{ i.gst_total|inr }}</td>
+  <td class="p-3 text-right text-emerald-400 font-bold">{{ i.total|inr }}</td>
+  <td class="p-3"><div class="flex gap-2 justify-end"><a class="{{ ui.btn_sm }}" href="{{ url_for('invoice_view', inv_id=i.id) }}">Open</a><a class="{{ ui.btn_in }}" href="{{ url_for('invoice_pdf', inv_id=i.id, dl=1) }}">PDF</a></div></td>
+</tr>{% endfor %}
+</tbody></table>
+<div class="flex items-center justify-between p-4 border-t border-slate-700 text-xs text-slate-400">
+  <span>Showing latest {{ recent|length }} of {{ stats.n }} invoice{{ '' if stats.n==1 else 's' }}</span>
+  {% if stats.n > recent|length %}<a href="{{ url_for('invoices') }}" class="{{ ui.btn_sm }}">View all invoices →</a>{% endif %}
+</div>
+{% else %}<p class="p-10 text-center text-slate-400"><b class="block text-white mb-1">No invoices yet</b>Create your first invoice to see it here.</p>{% endif %}
+</div>
+{% endblock %}

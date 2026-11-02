@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% from '_ui.html' import pager, chart, stat %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="flex flex-wrap justify-between items-center gap-3 mb-6">
+  <div><h1 class="text-2xl font-bold text-white">Admin control panel</h1><p class="text-xs text-slate-400 mt-1">SME GST Invoice Management System</p></div>
+  <a href="{{ url_for('admin_export') }}" class="{{ ui.btn_in }} !py-2.5 !px-4">⬇ Export CSV</a></div>
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+  {{ stat('Registered Users', user_n, 'all time', 'text-indigo-400') }}
+  {{ stat('Invoices', stats.n, 'generated', 'text-white') }}
+  {{ stat('Total Invoiced', stats.total|inr, 'all users', 'text-emerald-400') }}
+  {{ stat('GST Collected', stats.gst|inr, 'all users', 'text-amber-400') }}
+</div>
+<div class="grid lg:grid-cols-3 gap-6 mb-8">
+  <div class="lg:col-span-2 {{ ui.card }} p-6"><h2 class="text-lg font-bold text-white mb-4">Platform Revenue · Last 12 Months</h2>{{ chart(series, 'chart') }}</div>
+  <div class="{{ ui.card }} p-6"><h2 class="text-lg font-bold text-white">Sales by Category</h2>
+    <p class="text-[11px] text-slate-500 mb-4">All categories · share of total sales · auto GST rate</p>
+    {% for c in cats %}<div class="mb-3.5"><div class="flex justify-between items-baseline text-xs mb-1.5">
+      <span class="{{ 'text-slate-200' if c.amount else 'text-slate-500' }} font-semibold">{{ c.name }} <span class="text-slate-500 font-normal">· GST {{ c.gst }}% · {{ c.count }} item{{ '' if c.count==1 else 's' }}</span></span>
+      <span class="{{ 'text-emerald-400' if c.amount else 'text-slate-600' }} font-bold">{{ c.amount|inr }} <span class="text-slate-400 font-normal">({{ c.pct }}%)</span></span></div>
+      <div class="h-2 bg-[#101828] rounded-full overflow-hidden"><div class="h-full bg-indigo-500 rounded-full" style="width:{{ [c.pct, 2]|max if c.amount else 0 }}%"></div></div></div>
+    {% endfor %}</div>
+</div>
+<div class="{{ ui.card }} p-6 mb-8"><h2 class="text-lg font-bold text-white mb-4">Registered Users</h2>
+<div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead><tr class="border-b border-slate-700"><th class="{{ ui.th }}">ID</th><th class="{{ ui.th }}">Email</th><th class="{{ ui.th }}">Is Admin</th><th class="{{ ui.th }}">Invoices</th><th class="{{ ui.th }} text-right">Billed</th><th class="{{ ui.th }}">Last Login</th></tr></thead>
+<tbody class="divide-y divide-slate-700">{% for u in users %}<tr><td class="p-3">{{ u.id }}</td><td class="p-3 text-indigo-400 font-medium">{{ u.email }}</td>
+<td class="p-3">{% if u.email in config_admins %}<span class="bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-full text-xs border border-emerald-500/20">Admin</span>{% else %}<span class="bg-slate-700 text-slate-300 px-2.5 py-1 rounded-full text-xs">User</span>{% endif %}</td>
+<td class="p-3">{{ u.inv_n }}</td><td class="p-3 text-right text-emerald-400 font-bold">{{ u.billed|inr }}</td><td class="p-3 text-xs text-slate-400">{{ u.last_login|dt if u.last_login else '—' }}</td></tr>{% endfor %}</tbody></table></div></div>
+
+<h2 class="text-lg font-bold text-white mb-3">All Generated Invoices (Records)</h2>
+<form method="get" class="flex flex-wrap gap-3 mb-4">
+  <input name="q" value="{{ q }}" placeholder="Search number, buyer, item…" class="{{ ui.inp }} !w-80">
+  <button class="{{ ui.btn }}">Search</button>{% if q %}<a href="{{ url_for('admin_panel') }}" class="{{ ui.btn_sm }} !py-3">Clear</a>{% endif %}</form>
+<div class="{{ ui.card }} overflow-x-auto">
+{% if rows %}<table class="w-full text-left text-sm"><thead><tr class="border-b border-slate-700"><th class="{{ ui.th }}">Invoice</th><th class="{{ ui.th }}">User Email</th><th class="{{ ui.th }}">Buyer</th><th class="{{ ui.th }}">Date</th><th class="{{ ui.th }} text-right">GST</th><th class="{{ ui.th }} text-right">Total</th><th></th></tr></thead>
+<tbody class="divide-y divide-slate-700">{% for i in rows %}<tr><td class="p-3"><a class="font-semibold text-indigo-400 hover:text-indigo-300" href="{{ url_for('invoice_view', inv_id=i.id) }}">{{ i.invoice_no }}</a></td><td class="p-3 text-slate-300">{{ i.owner }}</td><td class="p-3 font-semibold text-white">{{ i.buyer_name }}</td><td class="p-3 text-xs text-slate-400">{{ i.created_at|dt }}</td>
+<td class="p-3 text-right text-amber-400">{{ i.gst_total|inr }}</td><td class="p-3 text-right text-emerald-400 font-bold">{{ i.total|inr }}</td>
+<td class="p-3"><div class="flex gap-2 justify-end"><a class="{{ ui.btn_in }}" href="{{ url_for('invoice_pdf', inv_id=i.id, dl=1) }}">PDF</a>
+<form method="post" action="{{ url_for('invoice_delete', inv_id=i.id) }}" data-confirm="Delete invoice {{ i.invoice_no }}?">{{ csrf_input() }}<input type="hidden" name="from" value="admin"><button class="{{ ui.btn_del }}">Delete</button></form></div></td></tr>{% endfor %}</tbody></table>
+{{ pager(endpoint, page, pages, total, q) }}
+{% else %}<p class="p-10 text-center text-slate-400"><b class="block text-white">No invoices found</b></p>{% endif %}
+</div>
+{% endblock %}

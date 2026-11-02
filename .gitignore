@@ -1,0 +1,16 @@
+# .env
+# .secret_key
+# venv/
+# __pycache__/
+# *.db-wal
+# *.db-shm
+
+.env
+.secret_key
+venv/
+__pycache__/
+*.db-wal
+*.db-shm
+invoice_app.db
+static/invoice.pdf
+.DS_Store

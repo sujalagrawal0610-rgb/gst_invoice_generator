@@ -1,0 +1,25 @@
+{% extends 'auth_base.html' %}
+{% block title %}{{ 'Admin Portal' if admin else 'Login' }}{% endblock %}
+{% block authbox %}
+<h2 class="text-center text-xl font-bold text-white mb-1">{{ '🔒 Admin Portal Login' if admin else 'Welcome' }}</h2>
+<p class="text-center text-sm text-slate-400 mb-8">{{ 'Enter your e-mail. We send a one-time code, then verify admin access.' if admin else 'Enter your e-mail and we will send you a secure 6-digit code.' }}</p>
+{% if not mail_ready %}<div class="mb-6 text-xs text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-xl p-3">Dev mode: e-mail is not configured in <b>.env</b>, so the OTP is printed in the terminal.</div>{% endif %}
+<form action="{{ url_for('login_request') }}" method="POST" class="space-y-6">
+  {{ csrf_input() }}
+  {% if admin %}<input type="hidden" name="admin" value="1">{% endif %}
+  <div>
+    <label class="block text-xs font-bold uppercase tracking-widest text-slate-300 mb-3">Enter Email for Login / OTP</label>
+    <div class="relative">
+      <svg class="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+      <input type="email" id="email" name="email" placeholder="name@company.com" required maxlength="254" autofocus autocomplete="email"
+             class="w-full pl-14 pr-5 py-5 text-lg bg-[#101828] border-2 border-slate-600 rounded-2xl text-white placeholder-slate-500 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/25 focus:outline-none transition">
+    </div>
+  </div>
+  <button type="submit" class="w-full py-5 text-lg font-bold text-white rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 shadow-xl shadow-indigo-600/40 transition duration-200 cursor-pointer">Get Secure OTP  →</button>
+</form>
+<div class="mt-8 text-center border-t border-slate-700 pt-6">
+  {% if admin %}<a href="{{ url_for('home') }}" class="text-sm font-semibold text-indigo-400 hover:text-indigo-300 tracking-wide uppercase">← Back to user login</a>
+  {% else %}<a href="{{ url_for('admin_login') }}" class="text-sm font-semibold text-indigo-400 hover:text-indigo-300 tracking-wide uppercase">🔒 Admin Portal Login</a>{% endif %}
+</div>
+<p class="mt-5 text-center text-xs text-slate-500">🔐 The code expires in a few minutes and can be used only once.</p>
+{% endblock %}

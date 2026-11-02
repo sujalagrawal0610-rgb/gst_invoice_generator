@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}{{ inv.invoice_no }}{% endblock %}
+{% block content %}
+<div class="flex flex-wrap justify-between items-start gap-4 mb-6">
+  <div><h1 class="text-2xl font-bold text-white">{{ inv.invoice_no }}</h1>
+  <p class="text-xs text-slate-400 mt-1">Created {{ inv.created_at|dt }}</p></div>
+  <div class="flex flex-wrap gap-2 items-center">
+    <a class="{{ ui.btn_ok }} !py-2.5" href="{{ url_for('invoice_pdf', inv_id=inv.id, dl=1) }}">⬇ Download PDF</a>
+    <a class="{{ ui.btn_sm }} !py-2.5 !px-4" target="_blank" rel="noopener" href="{{ url_for('invoice_pdf', inv_id=inv.id) }}">Preview</a>
+    {% if inv.user_id==user.id %}<a class="{{ ui.btn_in }} !py-2.5 !px-4" href="{{ url_for('invoice_new', **{'from': inv.id}) }}">Duplicate</a>{% endif %}
+    <form method="post" action="{{ url_for('invoice_delete', inv_id=inv.id) }}" data-confirm="Delete this invoice permanently?">{{ csrf_input() }}<button class="{{ ui.btn_del }} !py-2.5 !px-4">Delete</button></form>
+  </div>
+</div>
+<div class="grid lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-2 {{ ui.card }} overflow-x-auto">
+    <table class="w-full text-left text-sm"><thead><tr class="border-b border-slate-700"><th class="{{ ui.th }}">Item</th><th class="{{ ui.th }} text-right">Qty</th><th class="{{ ui.th }} text-right">Rate</th><th class="{{ ui.th }} text-right">Disc</th><th class="{{ ui.th }} text-right">GST</th><th class="{{ ui.th }} text-right">Amount</th></tr></thead>
+    <tbody class="divide-y divide-slate-700">{% for it in items %}<tr><td class="p-3"><b class="text-white">{{ it.name }}</b><div class="text-xs text-slate-500">{{ it.category }}</div></td><td class="p-3 text-right">{{ '%g'|format(it.qty) }}</td><td class="p-3 text-right">{{ it.rate|inr }}</td><td class="p-3 text-right">{{ '%g'|format(it.discount_pct) }}%</td><td class="p-3 text-right text-amber-400">{{ '%g'|format(it.gst_rate) }}%</td><td class="p-3 text-right font-bold text-emerald-400">{{ it.line_total|inr }}</td></tr>{% endfor %}</tbody></table>
+    <div class="p-5 border-t border-slate-700 ml-auto max-w-xs space-y-2 text-sm">
+      <div class="flex justify-between text-slate-400"><span>Subtotal</span><span>{{ inv.subtotal|inr }}</span></div>
+      {% if inv.discount_total %}<div class="flex justify-between text-slate-400"><span>Discount</span><span>− {{ inv.discount_total|inr }}</span></div>{% endif %}
+      <div class="flex justify-between text-slate-400"><span>GST</span><span class="text-amber-400">{{ inv.gst_total|inr }}</span></div>
+      <div class="flex justify-between border-t border-slate-600 pt-3"><span class="font-semibold text-white">Grand Total</span><span class="text-2xl font-black text-emerald-400">{{ inv.total|inr }}</span></div>
+    </div>
+  </div>
+  <div class="{{ ui.card }} p-6 self-start"><h2 class="text-lg font-bold text-white mb-3">Billed To</h2>
+    <p class="font-semibold text-white">{{ inv.buyer_name }}</p><p class="text-sm text-indigo-400">{{ inv.buyer_email or '' }}</p>
+    <p class="text-sm text-slate-400 whitespace-pre-line mt-1">{{ inv.buyer_address or '' }}</p>
+    {% if inv.notes %}<p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mt-4">Notes</p><p class="text-sm text-slate-300 whitespace-pre-line">{{ inv.notes }}</p>{% endif %}</div>
+</div>
+{% endblock %}

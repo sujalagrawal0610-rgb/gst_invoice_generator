@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Create Invoice{% endblock %}
+{% block content %}
+<div class="mb-6"><h1 class="text-2xl font-bold text-white">+ Create Invoice</h1>
+<p class="text-xs text-slate-400 mt-1">Category and GST are calculated automatically from the item name.</p></div>
+<form method="post" id="invForm" novalidate>
+{{ csrf_input() }}
+<div class="grid lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-2 space-y-6">
+    <div class="{{ ui.card }} p-6">
+      <h2 class="text-lg font-bold text-white mb-4">Items</h2>
+      <div class="overflow-x-auto scrollx"><table class="w-full text-left" id="items">
+        <thead><tr class="border-b border-slate-700 text-[10px] text-slate-400 uppercase tracking-wider"><th class="p-2">Item</th><th class="p-2">Qty</th><th class="p-2">Rate (Rs.)</th><th class="p-2">Disc %</th><th class="p-2">GST (auto)</th><th class="p-2 text-right">Amount</th><th></th></tr></thead>
+        <tbody class="divide-y divide-slate-700/60"></tbody></table></div>
+      <button type="button" id="addRow" class="mt-4 {{ ui.btn_in }}">+ Add item</button>
+    </div>
+    <div class="{{ ui.card }} p-6"><label class="{{ ui.lbl }}">Notes (shown on the PDF)</label>
+      <textarea name="notes" rows="3" maxlength="500" placeholder="Payment terms, bank details, thank-you note…" class="{{ ui.inp }}">{{ prefill.notes or '' }}</textarea></div>
+  </div>
+  <div class="space-y-6">
+    <div class="{{ ui.card }} p-6 space-y-4">
+      <h2 class="text-lg font-bold text-white">Buyer Details</h2>
+      <div><label class="{{ ui.lbl }}">Buyer Full Name *</label><input name="buyer_name" id="bName" value="{{ prefill.buyer_name or '' }}" maxlength="100" placeholder="John Doe" class="{{ ui.inp }}"></div>
+      <div><label class="{{ ui.lbl }}">Buyer Email</label><input type="email" name="buyer_email" id="bEmail" value="{{ prefill.buyer_email or '' }}" placeholder="john@company.com" class="{{ ui.inp }}"></div>
+      <div><label class="{{ ui.lbl }}">Address / Billing Details *</label><textarea name="buyer_address" id="bAddr" rows="3" maxlength="300" placeholder="Enter complete address..." class="{{ ui.inp }}">{{ prefill.buyer_address or '' }}</textarea></div>
+    </div>
+    <div class="{{ ui.card }} p-6">
+      <div class="space-y-2 text-sm">
+        <div class="flex justify-between text-slate-400"><span>Subtotal</span><b id="tSub" class="text-slate-200">₹0.00</b></div>
+        <div class="flex justify-between text-slate-400"><span>Discount</span><b id="tDisc" class="text-slate-200">₹0.00</b></div>
+        <div class="flex justify-between text-slate-400"><span>GST</span><b id="tGst" class="text-amber-400">₹0.00</b></div>
+        <div class="flex justify-between items-center border-t border-slate-600 pt-3 mt-2"><span class="text-white font-semibold">Grand Total</span><span id="tTot" class="text-2xl font-black text-emerald-400">₹0.00</span></div>
+      </div>
+      <button type="submit" class="w-full mt-5 {{ ui.btn_ok }}">⚡ Generate Invoice</button>
+    </div>
+  </div>
+</div>
+</form>
+<template id="rowTpl"><tr>
+  <td class="p-2 min-w-44"><input name="item_name" maxlength="120" placeholder="e.g. Laptop, Rolex Watch" autocomplete="off" class="w-full px-3 py-2 bg-[#101828] border border-slate-600 rounded-lg text-sm text-white placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none"><div class="hint text-[11px] text-indigo-400 mt-1 min-h-3.5"></div></td>
+  <td class="p-2"><input name="item_qty" inputmode="decimal" value="1" class="w-16 px-3 py-2 bg-[#101828] border border-slate-600 rounded-lg text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"></td>
+  <td class="p-2"><input name="item_rate" inputmode="decimal" placeholder="0.00" class="w-28 px-3 py-2 bg-[#101828] border border-slate-600 rounded-lg text-sm text-white placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none"></td>
+  <td class="p-2"><input name="item_disc" inputmode="decimal" value="0" class="w-16 px-3 py-2 bg-[#101828] border border-slate-600 rounded-lg text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"></td>
+  <td class="gst p-2 text-sm font-bold text-amber-400 whitespace-nowrap">—</td>
+  <td class="lt p-2 text-right font-bold text-emerald-400 text-sm whitespace-nowrap">₹0.00</td>
+  <td class="p-2"><button type="button" class="rm text-xs bg-rose-500/10 text-rose-400 px-2.5 py-1.5 rounded-lg border border-rose-500/20 hover:bg-rose-500/20" title="Remove">✕</button></td>
+</tr></template>
+{% endblock %}
+{% block scripts %}
+<script id="prefill" type="application/json">{{ prefill.rows|tojson }}</script>
+<script src="{{ url_for('static', filename='js/invoice.js') }}"></script>
+{% endblock %}
